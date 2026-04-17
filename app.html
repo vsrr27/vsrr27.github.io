@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mood Check-In | Vitoria</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background-color: #f0f4f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+    }
+
+    header {
+      width: 100%;
+      background-color: #1e3d28;
+      color: white;
+      text-align: center;
+      padding: 18px 20px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      letter-spacing: 0.5px;
+    }
+
+    nav {
+      width: 100%;
+      background-color: #163020;
+      text-align: center;
+      padding: 11px 20px;
+    }
+
+    nav a {
+      color: #c8e6d0;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: white; }
+
+    main {
+      width: 100%;
+      max-width: 680px;
+      padding: 40px 20px 60px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 18px rgba(45, 90, 61, 0.1);
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: #2d5a3d;
+      font-size: 1.7rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7c6b;
+      font-size: 0.95rem;
+      margin-bottom: 28px;
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .mood-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 8px;
+      border: 2px solid #d4e6da;
+      border-radius: 12px;
+      background: #f7faf8;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #4a6b52;
+    }
+
+    .mood-btn .emoji { font-size: 1.8rem; }
+
+    .mood-btn:hover {
+      border-color: #2d5a3d;
+      background-color: #eef5f0;
+      transform: translateY(-2px);
+    }
+
+    .mood-btn.selected {
+      border-color: #2d5a3d;
+      background-color: #2d5a3d;
+      color: white;
+    }
+
+    .question-label {
+      font-weight: 700;
+      color: #2d3a2d;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: #2d5a3d;
+      height: 6px;
+    }
+
+    .range-val {
+      font-weight: 700;
+      color: #2d5a3d;
+      min-width: 28px;
+      font-size: 1.1rem;
+    }
+
+    .note-input {
+      width: 100%;
+      border: 2px solid #d4e6da;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.95rem;
+      color: #2d3a2d;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.2s;
+      margin-bottom: 24px;
+    }
+
+    .note-input:focus {
+      outline: none;
+      border-color: #2d5a3d;
+    }
+
+    .submit-btn {
+      width: 100%;
+      background-color: #2d5a3d;
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
+      border-radius: 10px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background-color 0.2s, transform 0.15s;
+    }
+
+    .submit-btn:hover { background-color: #1e3d28; transform: scale(1.01); }
+    .submit-btn:active { transform: scale(0.99); }
+
+    /* Result card */
+    #result-card {
+      display: none;
+      background: white;
+      border-radius: 16px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 18px rgba(45, 90, 61, 0.1);
+      border-left: 6px solid #2d5a3d;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #result-card h3 {
+      font-family: 'Playfair Display', serif;
+      color: #2d5a3d;
+      font-size: 1.4rem;
+      margin-bottom: 6px;
+    }
+
+    #result-mood { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+
+    #result-message {
+      font-size: 1rem;
+      color: #3a4a3a;
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+
+    .tip-box {
+      background-color: #eef5f0;
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.9rem;
+      color: #2d5a3d;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .reset-btn {
+      background: none;
+      border: 2px solid #2d5a3d;
+      color: #2d5a3d;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-family: 'Lato', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .reset-btn:hover { background-color: #2d5a3d; color: white; }
+
+    /* History section */
+    #history-section { display: none; }
+
+    #history-section h3 {
+      font-family: 'Playfair Display', serif;
+      color: #2d5a3d;
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eef5f0;
+      font-size: 0.9rem;
+      color: #4a6b52;
+    }
+
+    .history-item .h-emoji { font-size: 1.4rem; }
+    .history-time { color: #8aab8f; font-size: 0.8rem; }
+
+    footer {
+      width: 100%;
+      background-color: #1e3d28;
+      color: #c8e6d0;
+      text-align: center;
+      padding: 18px;
+      font-size: 0.85rem;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>Vitoria &mdash; Wellness App</header>
+
+  <nav>
+    <a href="index.html">Home</a> |
+    <a href="resume.html">Resume</a> |
+    <a href="projects.html">Projects</a> |
+    <a href="scratch.html">Scratch Page</a> |
+    <a href="app.html">Web App</a>
+  </nav>
+
+  <main>
+
+    <!-- Check-in form -->
+    <div class="card" id="form-card">
+      <h2>Daily Mood Check-In</h2>
+      <p class="subtitle">How are you doing today? Take a moment to reflect.</p>
+
+      <p class="question-label">How are you feeling right now?</p>
+      <div class="mood-grid">
+        <button class="mood-btn" onclick="selectMood(this, 'Awful', '😔')">
+          <span class="emoji">😔</span>Awful
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, 'Low', '😕')">
+          <span class="emoji">😕</span>Low
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, 'Okay', '😐')">
+          <span class="emoji">😐</span>Okay
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, 'Good', '😊')">
+          <span class="emoji">😊</span>Good
+        </button>
+        <button class="mood-btn" onclick="selectMood(this, 'Great', '😄')">
+          <span class="emoji">😄</span>Great
+        </button>
+      </div>
+
+      <p class="question-label">Energy level today</p>
+      <div class="range-wrapper">
+        <span style="font-size:0.85rem; color:#6b7c6b;">Low</span>
+        <input type="range" min="1" max="10" value="5" id="energy-slider"
+          oninput="document.getElementById('energy-val').textContent = this.value">
+        <span style="font-size:0.85rem; color:#6b7c6b;">High</span>
+        <span class="range-val" id="energy-val">5</span>
+      </div>
+
+      <p class="question-label">Stress level today</p>
+      <div class="range-wrapper">
+        <span style="font-size:0.85rem; color:#6b7c6b;">None</span>
+        <input type="range" min="1" max="10" value="5" id="stress-slider"
+          oninput="document.getElementById('stress-val').textContent = this.value">
+        <span style="font-size:0.85rem; color:#6b7c6b;">Max</span>
+        <span class="range-val" id="stress-val">5</span>
+      </div>
+
+      <p class="question-label">One thing on your mind (optional)</p>
+      <textarea class="note-input" id="note-input" placeholder="e.g. I have a big exam this week..."></textarea>
+
+      <button class="submit-btn" onclick="submitCheckIn()">Get My Wellness Tip &rarr;</button>
+    </div>
+
+    <!-- Result -->
+    <div id="result-card">
+      <span id="result-mood"></span>
+      <h3 id="result-heading"></h3>
+      <p id="result-message"></p>
+      <div class="tip-box" id="tip-box"></div>
+      <button class="reset-btn" onclick="resetForm()">&#8592; Check In Again</button>
+    </div>
+
+    <!-- History -->
+    <div class="card" id="history-section">
+      <h3>Today's Check-Ins</h3>
+      <div id="history-list"></div>
+    </div>
+
+  </main>
+
+  <footer>&copy; 2026 Vitoria &mdash; Mood Check-In App</footer>
+
+  <script>
+    var selectedMood = null;
+    var selectedEmoji = null;
+    var history = [];
+
+    function selectMood(btn, mood, emoji) {
+      document.querySelectorAll('.mood-btn').forEach(function(b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      selectedMood = mood;
+      selectedEmoji = emoji;
+    }
+
+    var tips = {
+      Awful: [
+        "Be gentle with yourself today. You don't have to be productive — just breathing is enough.",
+        "On hard days, reaching out to someone you trust can make a real difference.",
+        "Try stepping outside for even 5 minutes. Fresh air and a short walk can shift your mood."
+      ],
+      Low: [
+        "Low days are temporary. Write down one small thing you're grateful for.",
+        "Drink some water, eat something nourishing, and give yourself grace.",
+        "A short playlist of uplifting music can gently shift your energy."
+      ],
+      Okay: [
+        "Okay days are perfectly fine! Use this steady energy to knock out one small task.",
+        "Sometimes 'okay' is exactly where you need to be. Keep going.",
+        "Try a 10-minute walk after your next task — it can turn okay into good."
+      ],
+      Good: [
+        "Great that you're feeling good! Channel that positivity into something you've been putting off.",
+        "Share your good energy with someone around you — it's contagious.",
+        "Good energy is a great time to check in with your goals and plans."
+      ],
+      Great: [
+        "You're thriving! Use this momentum to tackle something meaningful today.",
+        "When you feel great, it's a perfect time to support a friend who might be struggling.",
+        "Celebrate your good mood — note what contributed to it so you can recreate it."
+      ]
+    };
+
+    function submitCheckIn() {
+      if (!selectedMood) {
+        alert('Please select how you are feeling before submitting.');
+        return;
+      }
+
+      var energy = document.getElementById('energy-slider').value;
+      var stress = document.getElementById('stress-slider').value;
+      var note = document.getElementById('note-input').value.trim();
+
+      var moodTips = tips[selectedMood];
+      var tip = moodTips[Math.floor(Math.random() * moodTips.length)];
+
+      var heading = 'Feeling ' + selectedMood;
+      var message = 'You rated your energy at ' + energy + '/10 and your stress at ' + stress + '/10. ';
+
+      if (stress >= 7) {
+        message += 'It sounds like today might be challenging. Remember that stress is temporary and you are more capable than you realize. ';
+      } else if (energy >= 7) {
+        message += 'Your energy is strong today — that is something to appreciate! ';
+      } else {
+        message += 'Finding balance between energy and stress is key to a good day. ';
+      }
+
+      if (note) {
+        message += 'You mentioned: "' + note + '" — it is brave to acknowledge what is on your mind.';
+      }
+
+      document.getElementById('result-mood').textContent = selectedEmoji;
+      document.getElementById('result-heading').textContent = heading;
+      document.getElementById('result-message').textContent = message;
+      document.getElementById('tip-box').textContent = '💡 Tip: ' + tip;
+
+      document.getElementById('form-card').style.display = 'none';
+      document.getElementById('result-card').style.display = 'block';
+
+      var now = new Date();
+      var timeStr = now.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      history.push({ mood: selectedMood, emoji: selectedEmoji, time: timeStr, energy: energy, stress: stress });
+      updateHistory();
+    }
+
+    function updateHistory() {
+      if (history.length === 0) return;
+      var histSection = document.getElementById('history-section');
+      histSection.style.display = 'block';
+      var list = document.getElementById('history-list');
+      list.innerHTML = '';
+      history.forEach(function(entry) {
+        var item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = '<span class="h-emoji">' + entry.emoji + '</span>' +
+          '<span>' + entry.mood + ' &mdash; Energy: ' + entry.energy + '/10, Stress: ' + entry.stress + '/10</span>' +
+          '<span class="history-time" style="margin-left:auto;">' + entry.time + '</span>';
+        list.appendChild(item);
+      });
+    }
+
+    function resetForm() {
+      selectedMood = null;
+      selectedEmoji = null;
+      document.querySelectorAll('.mood-btn').forEach(function(b) { b.classList.remove('selected'); });
+      document.getElementById('energy-slider').value = 5;
+      document.getElementById('energy-val').textContent = '5';
+      document.getElementById('stress-slider').value = 5;
+      document.getElementById('stress-val').textContent = '5';
+      document.getElementById('note-input').value = '';
+      document.getElementById('result-card').style.display = 'none';
+      document.getElementById('form-card').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
